@@ -7,5 +7,6 @@ package optefx.util.metadata;
  */
 public interface Metadata
 {
-    
+    int prueba();
+    int prueba2();
 }
