@@ -7,4 +7,5 @@ package optefx.util.metadata;
  */
 public interface Metadata
 {
+    
 }
