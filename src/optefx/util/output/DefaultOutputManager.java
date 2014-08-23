@@ -119,7 +119,7 @@ public class DefaultOutputManager extends OutputManager
             String currId = ids[i];
             MultiWriter writer = getWriter(ids[i]);
             
-            if(config.isPermanent(currId))
+            if(config.isPersistent(currId))
                 writer.setPermanent();
             
             WriterBuilder[] builders = config.getBuildersFor(currId);

@@ -119,6 +119,9 @@ import java.util.Map;
  */
 public abstract class OutputManager
 {
+    public static final String DEFAULT_ID = "default";
+    public static final String DEFAULT_ERROR_ID = "default-error";
+    
     private static OutputManager baseManager = new DefaultOutputManager();
     private static Map<Enum, OutputManager> customManagers = new HashMap<>();
     private static Map<Enum, OutputManager> basicManagers;

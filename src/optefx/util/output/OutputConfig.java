@@ -16,5 +16,5 @@ public interface OutputConfig
     int getIdsCount();
     String[] getIds();    
     WriterBuilder[] getBuildersFor(String id);
-    boolean isPermanent(String id);
+    boolean isPersistent(String id);
 }

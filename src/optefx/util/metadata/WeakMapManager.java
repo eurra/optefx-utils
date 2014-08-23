@@ -11,7 +11,7 @@ import java.util.WeakHashMap;
  */
 class WeakMapManager extends MetadataManager
 {
-    private WeakHashMap<Object, List<Metadata>> cachedData;
+    private final WeakHashMap<Object, List<Metadata>> cachedData;
 
     public WeakMapManager()
     {

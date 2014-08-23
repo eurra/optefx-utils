@@ -10,7 +10,7 @@ import java.io.Writer;
  *
  * @author Enrique Urra C.
  */
-public class FileWriterBuilder implements WriterBuilder
+public final class FileWriterBuilder implements WriterBuilder
 {
     private String path;
     private boolean append;

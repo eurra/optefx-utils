@@ -1,17 +1,18 @@
 
-package optefx.util.reflection;
+package optefx.util.tools;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.HashMap;
 
 /**
  * Defines a set of operations to manipulate objects by reflection.
  * @author Enrique Urra C.
  */
-public class ReflectionTool
+public final class ReflectionTools
 {    
     private static final Object[][] primitiveInfo;
     
@@ -465,6 +466,113 @@ public class ReflectionTool
         }
     }
     
+    private static Object[] tryCreateVarargsArray(Class varargType, Object[] inputArgs, int startIndex)
+    {
+        try
+        {
+            Object[] varArgs = (Object[])Array.newInstance(varargType, inputArgs.length - startIndex);
+            System.arraycopy(inputArgs, startIndex, varArgs, 0, inputArgs.length - startIndex);
+            
+            return varArgs;
+        }
+        catch(ArrayStoreException ex)
+        {
+            return null;
+        }
+    }
+    
+    public static Object createObject(Class classObj, Object[] argsObjs) throws ReflectionException
+    {
+        if(classObj == null)
+            throw new NullPointerException("The provided class to instantiate cannot be null");
+        
+        if(argsObjs == null)
+            argsObjs = new Object[0];
+        
+        Constructor[] constructors = classObj.getConstructors();
+        HashMap<Constructor, Object[]> findMap = new HashMap<>(constructors.length);
+        
+        for(int i = 0; i < constructors.length; i++)
+        {
+            Constructor currConst = constructors[i];
+            Class[] constArgs = currConst.getParameterTypes();
+            int constArgsCount = constArgs.length;
+            
+            if(currConst.isVarArgs())
+            {
+                Class varArgType = constArgs[constArgs.length - 1].getComponentType();
+                Object[] varArgs = tryCreateVarargsArray(varArgType, argsObjs, constArgs.length - 1);
+                
+                if(varArgs == null)
+                    continue;
+                
+                Object[] finalArgs = new Object[constArgsCount];
+                System.arraycopy(argsObjs, 0, finalArgs, 0, constArgsCount - 1);
+                finalArgs[constArgsCount - 1] = varArgs;
+                findMap.put(currConst, finalArgs);
+                
+                /*if(constArgsCount == 1)
+                {
+                    findMap.put(currConst, argsObjs);
+                }
+                else if(constArgsCount > 1 && argsObjs.length >= constArgsCount)
+                {
+                    
+                    
+                    if(varArgType.isAssignableFrom(argsObjs[constArgs.length - 1].getClass()))
+                    {
+                        Object[] finalArgs = new Object[constArgsCount];
+                        System.arraycopy(argsObjs, 0, finalArgs, 0, constArgsCount - 1);
+                    
+                        Object[] varArgs = (Object[])Array.newInstance(varArgType, argsObjs.length - constArgsCount + 1);
+                        System.arraycopy(argsObjs, constArgsCount - 1, varArgs, 0, argsObjs.length - constArgsCount + 1);
+                        finalArgs[constArgsCount - 1] = varArgs;
+
+                        findMap.put(currConst, finalArgs);
+                    }
+                }*/
+            }
+            else if(constArgsCount == argsObjs.length)
+            {
+                boolean compatible = true;
+                
+                for(int j = 0; j < constArgsCount && compatible; j++)
+                {
+                    if(!constArgs[j].isAssignableFrom(argsObjs[j].getClass()))
+                        compatible = false;
+                }
+                
+                if(!compatible)
+                    continue;
+                
+                findMap.put(currConst, argsObjs);
+            }
+        }
+        
+        Object created = null;
+        
+        for(Constructor constructor : findMap.keySet())
+        {
+            try
+            {
+                created = constructor.newInstance(findMap.get(constructor));
+                break;
+            }
+            catch(InstantiationException | IllegalAccessException | IllegalArgumentException ex)
+            {
+            }
+            catch(InvocationTargetException ex)
+            {
+                throw new ReflectionException(ex.getCause());
+            }
+        }
+        
+        if(created == null)
+            throw new ReflectionException("The class '" + classObj.getCanonicalName() + "' do not have a constructor with such class arguments");
+        
+        return created;
+    }
+    
     /**
      * Creates a new object from a custom constructor.
      * @param classObj The class of the object to instantiate.
@@ -611,5 +719,9 @@ public class ReflectionTool
         }
         
         return mostSpecificClass;
+    }
+
+    private ReflectionTools()
+    {
     }
 }
