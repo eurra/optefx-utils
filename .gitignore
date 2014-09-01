@@ -17,3 +17,4 @@ nbproject/
 *.ear
 /dist/
 /build/
+/test/
